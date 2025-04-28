@@ -66,6 +66,25 @@ services:
       - backend
     restart: always
 
+  # Orders Microservice
+  orders-ms:
+    build: ./backend/microservices/orders
+    image: orders-ms
+    volumes:
+      - ./backend/microservices/orders:/usr/src/app
+    command: /bin/sh -c "sleep 15 && npm run start:dev"
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${ORDERS_DATABASE_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+    networks:
+      - backend
+    restart: always
+
 networks:
   backend:
     driver: bridge

@@ -1,12 +1,35 @@
 {
   "name": "orders",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
+    "start": "npm run prisma:generate && node dist/main.js",
+    "start:dev": "npm run prisma:generate && npm run prisma:migrate && ts-node-dev --respawn --transpile-only --poll src/main.ts",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "orders",
+    "microservices",
+    "order management"
+  ],
+  "author": "Breyner Lascarro A.",
   "license": "ISC",
-  "description": ""
+  "description": "Microservicio de gestión de órdenes para el ecosistema de microservicios.",
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7",
+    "@types/node": "^22.15.2",
+    "prisma": "^6.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "amqplib": "^0.10.7",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.5.0"
+  }
 }

@@ -41,7 +41,7 @@ export class AuthController {
         return res.end(
           JSON.stringify({
             data: response.data,
-            message: "Login successful",
+            message: response.message || "Login successful",
           })
         );
       } else {
@@ -91,7 +91,7 @@ export class AuthController {
         return res.end(
           JSON.stringify({
             data: response.data,
-            message: "Valid token",
+            message: response.message || "Valid token",
           })
         );
       } else {

@@ -2,6 +2,7 @@ import { Channel, Message } from "amqplib";
 import { AuthService } from "./auth.service";
 import { validateDto } from "../common/middlewares/validate-dto";
 import { LoginUserDto } from "./dto/login-user.dto";
+import { sendResponse } from "../common/message-broken/responses";
 
 export class AuthController {
   private channel: Channel;
@@ -58,18 +59,21 @@ export class AuthController {
 
     if (errors.length > 0) {
       console.error("❌ Validation failed:", errors);
-      this.sendResponse(msg, { success: false, errors });
+      sendResponse(this.channel, msg, { success: false, errors });
       return;
     }
 
     if (!data) {
       console.error("❌ Validation failed: data is null.");
-      this.sendResponse(msg, { success: false, errors: ["Invalid data"] });
+      sendResponse(this.channel, msg, {
+        success: false,
+        errors: ["Invalid data"],
+      });
       return;
     }
 
     const response = await this.authService.login(data);
-    this.sendResponse(msg, response);
+    sendResponse(this.channel, msg, response);
   }
 
   // Handler para auth.verifyToken
@@ -78,7 +82,7 @@ export class AuthController {
 
     if (!token) {
       console.error("❌ Token not provided.");
-      this.sendResponse(msg, {
+      sendResponse(this.channel, msg, {
         success: false,
         errors: ["Token not provided"],
       });
@@ -86,22 +90,6 @@ export class AuthController {
     }
 
     const response = await this.authService.verifyToken(token);
-    this.sendResponse(msg, response);
-  }
-
-  // Método para enviar respuesta
-  private sendResponse(msg: Message, response: any) {
-    const { replyTo, correlationId } = msg.properties;
-
-    if (!replyTo) {
-      console.warn("❌ No replyTo specified, cannot send response.");
-      return;
-    }
-
-    this.channel.sendToQueue(replyTo, Buffer.from(JSON.stringify(response)), {
-      correlationId,
-    });
-
-    console.log("📤 Sent response to:", replyTo);
+    sendResponse(this.channel, msg, response);
   }
 }
