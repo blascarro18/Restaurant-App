@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  # Postgres Database
+  postgres-db:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - ${RABBITMQ_HTTP_PORT}:${RABBITMQ_HTTP_PORT}
+      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+    networks:
+      - backend
+
+  # Api Gateway
+  api-gateway:
+    build: ./backend/api-gateway
+    image: api-gateway
+    ports:
+      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
+    volumes:
+      - ./backend/api-gateway:/usr/src/app
+    command: npm run start:dev
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+    networks:
+      - backend
+    restart: always
+
+  # Auth Microservice
+  auth-ms:
+    build: ./backend/microservices/auth
+    image: auth-ms
+    volumes:
+      - ./backend/microservices/auth:/usr/src/app
+    command: /bin/sh -c "sleep 15 && npm run start:dev"
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+    networks:
+      - backend
+    restart: always
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local

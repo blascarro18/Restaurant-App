@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# Logs
+*.log
+
+# Dependencias instaladas por npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de configuración de entorno
+.env
+
+# Archivos de compilación
+dist/
+build/
+
+# Archivos generados por el sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración del editor
+.vscode/
+.idea/
+
+# Archivos de prueba y cobertura
+coverage/
+
+# Directorios de Docker
+.docker/
+docker-compose.override.yml

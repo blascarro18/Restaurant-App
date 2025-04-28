@@ -1,0 +1,5 @@
+# Ignorar archivos de configuración local
+.vscode/
+
+# Ignorar archivos de variables de entorno locales
+.env

@@ -1,0 +1,12 @@
+# Ignorar archivos de configuración local
+.vscode/
+
+# Ignorar archivos de variables de entorno locales
+.env
+
+# Ignorar módulos de node
+node_modules/
+
+# Ignorar archivos temporales o de sistema
+.DS_Store   # Para MacOS
+Thumbs.db   # Para Windows
