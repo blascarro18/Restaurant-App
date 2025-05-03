@@ -1,0 +1,361 @@
+<div
+    class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto"
+    cdkScrollable
+>
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-8">
+        <div class="grid grid-cols-1 gap-8 w-full">
+            <div
+                class="xl:col-span-2 flex flex-col flex-auto bg-card shadow rounded-2xl overflow-hidden"
+            >
+                <!-- Header -->
+                <div
+                    class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between py-8 px-6 md:px-8"
+                >
+                    <!-- Title -->
+                    <div>
+                        <div
+                            class="text-3xl font-bold tracking-tight leading-8"
+                        >
+                            Ordenes de cocina
+                        </div>
+                        <div class="font-medium tracking-tight text-secondary">
+                            Historial de ordenes de cocina
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto mx-6">
+                    <div class="flex flex-auto overflow-hidden">
+                        <!-- Orders list -->
+                        <div
+                            class="flex flex-col flex-auto sm:mb-6 overflow-hidden sm:overflow-y-auto"
+                        >
+                            <div
+                                class="table-responsive w-full border"
+                                style="overflow-x: auto"
+                            >
+                                <table
+                                    mat-table
+                                    matSort
+                                    [dataSource]="orders"
+                                    class="mat-elevation-z8"
+                                >
+                                    <ng-container matColumnDef="orderNumber">
+                                        <th
+                                            class="text-center pl-10"
+                                            mat-header-cell
+                                            mat-sort-header
+                                            *matHeaderCellDef
+                                        >
+                                            # Orden
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            {{ element.id }}
+                                        </td>
+                                    </ng-container>
+
+                                    <ng-container matColumnDef="recipe">
+                                        <th
+                                            class="text-center pl-10"
+                                            mat-header-cell
+                                            mat-sort-header
+                                            *matHeaderCellDef
+                                        >
+                                            Receta Asignada
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            {{ element?.recipe?.name }}
+                                        </td>
+                                    </ng-container>
+
+                                    <ng-container matColumnDef="status">
+                                        <th
+                                            class="text-center pl-10"
+                                            mat-header-cell
+                                            mat-sort-header
+                                            *matHeaderCellDef
+                                        >
+                                            Estado de orden
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            <div
+                                                *ngIf="
+                                                    element.status ===
+                                                    'Recibida y enviada a cocina'
+                                                "
+                                                class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-amber-800 bg-amber-200"
+                                            >
+                                                {{ element?.status }}
+                                            </div>
+
+                                            <div
+                                                *ngIf="
+                                                    element.status ===
+                                                    'Solicitando ingredientes a bodega'
+                                                "
+                                                class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-blue-800 bg-blue-200"
+                                            >
+                                                {{ element?.status }}
+                                            </div>
+
+                                            <div
+                                                *ngIf="
+                                                    element.status ===
+                                                    'Esperando ingredientes de bodega'
+                                                "
+                                                class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-orange-800 bg-orange-200"
+                                            >
+                                                {{ element?.status }}
+                                            </div>
+
+                                            <div
+                                                *ngIf="
+                                                    element.status ===
+                                                    'Ingredientes entregados a cocina'
+                                                "
+                                                class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-pink-800 bg-pink-200"
+                                            >
+                                                {{ element?.status }}
+                                            </div>
+
+                                            <div
+                                                *ngIf="
+                                                    element.status ===
+                                                    'Preparando plato'
+                                                "
+                                                class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-purple-800 bg-purple-200"
+                                            >
+                                                {{ element?.status }}
+                                            </div>
+
+                                            <div
+                                                *ngIf="
+                                                    element.status ===
+                                                    'Orden Entregada'
+                                                "
+                                                class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-green-800 bg-green-200"
+                                            >
+                                                {{ element?.status }}
+                                            </div>
+                                        </td>
+                                    </ng-container>
+
+                                    <!-- Actions Column -->
+                                    <ng-container matColumnDef="actions">
+                                        <th
+                                            class="text-center"
+                                            mat-header-cell
+                                            *matHeaderCellDef
+                                        >
+                                            Acciones
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            <button
+                                                mat-icon-button
+                                                [matTooltip]="'Ver Orden'"
+                                                [matTooltipPosition]="'above'"
+                                                (click)="
+                                                    openDialogOrder(element)
+                                                "
+                                            >
+                                                <mat-icon
+                                                    [svgIcon]="
+                                                        'mat_solid:receipt_long'
+                                                    "
+                                                ></mat-icon>
+                                            </button>
+                                        </td>
+                                    </ng-container>
+
+                                    <tr class="mat-row" *matNoDataRow>
+                                        <td
+                                            class="mat-cell text-center py-4"
+                                            colspan="4"
+                                        >
+                                            No existen datos registrados.
+                                        </td>
+                                    </tr>
+
+                                    <tr
+                                        mat-header-row
+                                        *matHeaderRowDef="displayedColumns"
+                                    ></tr>
+                                    <tr
+                                        mat-row
+                                        *matRowDef="
+                                            let row;
+                                            columns: displayedColumns
+                                        "
+                                    ></tr>
+                                </table>
+                            </div>
+
+                            <div
+                                class="bg-card rounded-b-2xl shadow flex flex-end justify-end border-t"
+                            >
+                                <mat-paginator
+                                    class="rounded-b-2xl"
+                                    [ngClass]="{
+                                        'pointer-events-none': isLoading
+                                    }"
+                                    [length]="paginationData?.totalItems"
+                                    [pageIndex]="paginationData?.page - 1"
+                                    [pageSize]="paginationData?.limit"
+                                    [pageSizeOptions]="[5, 10, 25, 100]"
+                                    [showFirstLastButtons]="true"
+                                    (page)="paginationChange($event)"
+                                ></mat-paginator>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #dialogOrder>
+    <h2
+        class="text-3xl font-extrabold tracking-tight leading-8"
+        mat-dialog-title
+    >
+        Orden #{{ selectedOrder?.id }} -
+        <div
+            *ngIf="selectedOrder.status === 'Recibida y enviada a cocina'"
+            class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-amber-800 bg-amber-200"
+            style="position: absolute; top: 22px; margin-left: 10px"
+        >
+            {{ selectedOrder?.status }}
+        </div>
+
+        <div
+            *ngIf="selectedOrder.status === 'Solicitando ingredientes a bodega'"
+            class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-blue-800 bg-blue-200"
+            style="position: absolute; top: 22px; margin-left: 10px"
+        >
+            {{ selectedOrder?.status }}
+        </div>
+
+        <div
+            *ngIf="selectedOrder.status === 'Esperando ingredientes de bodega'"
+            class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-orange-800 bg-orange-200"
+            style="position: absolute; top: 22px; margin-left: 10px"
+        >
+            {{ selectedOrder?.status }}
+        </div>
+
+        <div
+            *ngIf="selectedOrder.status === 'Ingredientes entregados a cocina'"
+            class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-pink-800 bg-pink-200"
+            style="position: absolute; top: 22px; margin-left: 10px"
+        >
+            {{ selectedOrder?.status }}
+        </div>
+
+        <div
+            *ngIf="selectedOrder.status === 'Preparando plato'"
+            class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-purple-800 bg-purple-200"
+            style="position: absolute; top: 22px; margin-left: 10px"
+        >
+            {{ selectedOrder?.status }}
+        </div>
+
+        <div
+            *ngIf="selectedOrder.status === 'Orden Entregada'"
+            class="py-0.5 px-2 rounded-full inline-block text-sm font-bold text-green-800 bg-green-200"
+            style="position: absolute; top: 22px; margin-left: 10px"
+        >
+            {{ selectedOrder?.status }}
+        </div>
+    </h2>
+    <mat-dialog-content class="mat-typography">
+        <div class="flex flex-row w-full h-full gap-4">
+            <!-- Columna izquierda: Imagen -->
+            <div class="w-1/3 flex items-center justify-center">
+                <div class="w-full rounded overflow-hidden">
+                    <a
+                        [href]="selectedOrder?.recipe?.image"
+                        target="_blank"
+                        *ngIf="selectedOrder?.recipe?.image"
+                    >
+                        <img
+                            class="w-full object-cover"
+                            [alt]="selectedOrder?.recipe?.name"
+                            [src]="selectedOrder?.recipe?.image"
+                        />
+                    </a>
+                    <div
+                        class="flex items-center justify-center w-full h-full text-xs font-bold leading-none text-center uppercase"
+                        *ngIf="!selectedOrder?.recipe?.image"
+                    >
+                        NO IMAGE
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha: Información -->
+            <div class="w-2/3 flex flex-col justify-start">
+                <!-- Información de la receta -->
+                <h2 class="text-3xl font-bold mb-2">
+                    {{ selectedOrder?.recipe?.name }}
+                </h2>
+                <p class="text-xl text-secondary mb-4">
+                    {{ selectedOrder?.recipe?.description }}
+                </p>
+
+                <!-- Ingredientes -->
+                <div *ngIf="selectedOrder?.recipe?.ingredients?.length > 0">
+                    <h3 class="text-lg font-semibold mb-3">Ingredientes:</h3>
+                    <ul class="space-y-3">
+                        <li
+                            class="flex items-center gap-3 text-base"
+                            *ngFor="
+                                let ingredient of selectedOrder?.recipe
+                                    ?.ingredients
+                            "
+                        >
+                            <img
+                                [src]="ingredient.image"
+                                [alt]="ingredient.name"
+                                class="w-8 h-8 rounded object-cover border"
+                                *ngIf="ingredient.image"
+                            />
+                            <span class="font-medium">
+                                x{{ ingredient.quantity }} {{ ingredient.name }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button
+            class="mat-raised-button font-extrabold"
+            mat-raised-button
+            [color]="'accent'"
+            (click)="closeDialog()"
+            [disabled]="isLoading"
+        >
+            Cerrar
+        </button>
+    </mat-dialog-actions>
+</ng-template>

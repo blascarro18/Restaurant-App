@@ -1,0 +1,23 @@
+/* ----------------------------------------------------------------------------------------------------- */
+/*  @ Import/write your custom styles here.
+/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* ----------------------------------------------------------------------------------------------------- */
+
+table {
+    width: 100%;
+    text-align: center !important;
+
+    .mat-mdc-header-row {
+        background-color: #f8f8f8 !important;
+    }
+}
+
+td.text-center,
+th.text-center {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.text-center .mat-sort-header-container {
+    justify-content: center !important;
+}

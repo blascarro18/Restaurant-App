@@ -1,6 +1,8 @@
+import "reflect-metadata";
 import dotenv from "dotenv";
 import { connect } from "amqplib";
 import { OrdersController } from "./module/orders.controller";
+import { initSocketServer } from "./common/socket.io/socket.io";
 
 dotenv.config();
 
@@ -20,6 +22,9 @@ async function startAuthMicroservice() {
   await ordersController.startListening();
 
   console.log("✅ Orders microservice listening for requests...");
+
+  // Iniciar WebSocket
+  initSocketServer(); // 👈
 
   // Manejador de errores
   connection.on("error", (error) => {

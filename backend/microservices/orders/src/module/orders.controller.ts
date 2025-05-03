@@ -3,6 +3,7 @@ import { OrdersService } from "./orders.service";
 import { validateDto } from "../common/middlewares/validate-dto";
 import { sendResponse } from "../common/message-broken/responses";
 import { UpdateOrderDto } from "./dto/update-order.dto";
+import { PaginationDto } from "../common/dtos/pagination.dto";
 
 export class OrdersController {
   private channel: Channel;
@@ -14,9 +15,12 @@ export class OrdersController {
   constructor(channel: Channel) {
     this.channel = channel;
     this.ordersService = new OrdersService();
+    this.handlers = this.initializeHandlers();
+  }
 
-    // Inicializamos los handlers de cada tópico
-    this.handlers = {
+  // Método para inicializar los handlers
+  private initializeHandlers() {
+    return {
       "orders.create.newOrder": this.handleCreateNewOrder.bind(this),
       "orders.update.order": this.handleUpdateOrder.bind(this),
       "orders.get.orders": this.handleGetOrders.bind(this),
@@ -26,30 +30,35 @@ export class OrdersController {
 
   // Método para iniciar la escucha de los tópicos
   async startListening() {
+    await this.setupQueuesAndBindings();
+    this.consumeMessages("orders_queue");
+  }
+
+  // Configuración de colas y enlaces
+  private async setupQueuesAndBindings() {
     await this.channel.assertQueue("orders_queue", { durable: true });
+    await this.bindQueueToExchange("orders_queue", "orders_exchange", [
+      "orders.create.newOrder",
+      "orders.update.order",
+      "orders.get.orders",
+      "orders.get.orderById",
+    ]);
+  }
 
-    await this.channel.bindQueue(
-      "orders_queue",
-      "orders_exchange",
-      "orders.create.newOrder"
-    );
-    await this.channel.bindQueue(
-      "orders_queue",
-      "orders_exchange",
-      "orders.update.order"
-    );
-    await this.channel.bindQueue(
-      "orders_queue",
-      "orders_exchange",
-      "orders.get.orders"
-    );
-    await this.channel.bindQueue(
-      "orders_queue",
-      "orders_exchange",
-      "orders.get.orderById"
-    );
+  // Método para enlazar una cola a un exchange con múltiples routing keys
+  private async bindQueueToExchange(
+    queue: string,
+    exchange: string,
+    routingKeys: string[]
+  ) {
+    for (const routingKey of routingKeys) {
+      await this.channel.bindQueue(queue, exchange, routingKey);
+    }
+  }
 
-    this.channel.consume("orders_queue", async (msg) => {
+  // Método para consumir los mensajes de una cola
+  private async consumeMessages(queue: string) {
+    this.channel.consume(queue, async (msg) => {
       if (!msg) return;
 
       const routingKey = msg.fields.routingKey;
@@ -58,7 +67,6 @@ export class OrdersController {
       console.log(`📩 Received message with routingKey: ${routingKey}`);
 
       const handler = this.handlers[routingKey];
-
       if (handler) {
         await handler(msg, payload);
       } else {
@@ -99,8 +107,25 @@ export class OrdersController {
   }
 
   // Handler para orders.get.orders
-  private async handleGetOrders(msg: Message) {
-    const response = await this.ordersService.getOrders();
+  private async handleGetOrders(msg: Message, payload: PaginationDto) {
+    const { data, errors } = await validateDto(payload, PaginationDto);
+
+    if (errors.length > 0) {
+      console.error("❌ Validation failed:", errors);
+      sendResponse(this.channel, msg, { success: false, errors });
+      return;
+    }
+
+    if (!data) {
+      console.error("❌ Validation failed: data is null.");
+      sendResponse(this.channel, msg, {
+        success: false,
+        errors: ["Invalid data"],
+      });
+      return;
+    }
+
+    const response = await this.ordersService.getOrders(data);
     sendResponse(this.channel, msg, response);
   }
 

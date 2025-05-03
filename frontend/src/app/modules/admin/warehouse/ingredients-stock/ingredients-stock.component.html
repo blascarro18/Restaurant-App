@@ -1,0 +1,151 @@
+<div
+    class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto"
+    cdkScrollable
+>
+    <!-- Main -->
+    <div class="flex-auto p-4 sm:p-8">
+        <div class="grid grid-cols-1 gap-8 w-full">
+            <div
+                class="xl:col-span-2 flex flex-col flex-auto bg-card shadow rounded-2xl overflow-hidden"
+            >
+                <!-- Header -->
+                <div
+                    class="relative flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between py-8 px-6 md:px-8"
+                >
+                    <!-- Title -->
+                    <div>
+                        <div
+                            class="text-3xl font-bold tracking-tight leading-8"
+                        >
+                            Inventario de ingredientes
+                        </div>
+                        <div class="font-medium tracking-tight text-secondary">
+                            Módulo para visualizar el inventario de
+                            ingredientes.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto mx-6">
+                    <div class="flex flex-auto overflow-hidden">
+                        <!-- Ingredients list -->
+                        <div
+                            class="flex flex-col flex-auto sm:mb-6 overflow-hidden sm:overflow-y-auto"
+                        >
+                            <div
+                                class="table-responsive w-full border"
+                                style="overflow-x: auto"
+                            >
+                                <table
+                                    mat-table
+                                    matSort
+                                    [dataSource]="ingredients"
+                                    class="mat-elevation-z8"
+                                >
+                                    <ng-container matColumnDef="image">
+                                        <th
+                                            class="text-center pl-10"
+                                            mat-header-cell
+                                            mat-sort-header
+                                            *matHeaderCellDef
+                                        >
+                                            Imagen
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            style="
+                                                justify-items: center !important;
+                                            "
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            <!-- image -->
+                                            <div
+                                                class="max-w-14 h-14 m-4 rounded overflow-hidden border"
+                                            >
+                                                <a
+                                                    [href]="element.image"
+                                                    target="_blank"
+                                                >
+                                                    <img
+                                                        class="max-w-14 h-14"
+                                                        *ngIf="element.image"
+                                                        [alt]="element.name"
+                                                        [src]="element.image"
+                                                    />
+                                                </a>
+                                                <div
+                                                    class="flex items-center justify-center w-full h-full text-xs font-bold leading-none text-center uppercase"
+                                                    *ngIf="!element.image"
+                                                >
+                                                    NO IMAGE
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </ng-container>
+
+                                    <ng-container matColumnDef="name">
+                                        <th
+                                            class="text-center pl-10"
+                                            mat-header-cell
+                                            mat-sort-header
+                                            *matHeaderCellDef
+                                        >
+                                            Nombre de receta
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            {{ element.name }}
+                                        </td>
+                                    </ng-container>
+
+                                    <ng-container matColumnDef="stock">
+                                        <th
+                                            class="text-center pl-10"
+                                            mat-header-cell
+                                            mat-sort-header
+                                            *matHeaderCellDef
+                                        >
+                                            Stock Actual
+                                        </th>
+                                        <td
+                                            class="text-center"
+                                            mat-cell
+                                            *matCellDef="let element"
+                                        >
+                                            {{ element?.stock?.quantity }}
+                                        </td>
+                                    </ng-container>
+
+                                    <tr class="mat-row" *matNoDataRow>
+                                        <td
+                                            class="mat-cell text-center py-4"
+                                            colspan="3"
+                                        >
+                                            No existen datos registrados.
+                                        </td>
+                                    </tr>
+
+                                    <tr
+                                        mat-header-row
+                                        *matHeaderRowDef="displayedColumns"
+                                    ></tr>
+                                    <tr
+                                        mat-row
+                                        *matRowDef="
+                                            let row;
+                                            columns: displayedColumns
+                                        "
+                                    ></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

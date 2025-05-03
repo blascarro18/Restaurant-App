@@ -35,7 +35,7 @@ export async function verifyToken(
     if (response.success) {
       return true; // Token válido
     } else {
-      res.writeHead(403, { "Content-Type": "application/json" });
+      res.writeHead(401, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: "Invalid or expired token" }));
       return false; // Token inválido
     }

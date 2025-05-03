@@ -1,0 +1,63 @@
+# Node.js dependencies
+node_modules
+# Ignorar cualquier log relacionado con npm o yarn
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Angular build outputs
+dist
+out-tsc
+coverage
+
+# Angular cache
+.angular/cache
+
+# Environment variables
+.env
+.env.*.local
+
+# Editor directories and files
+.vscode
+.idea
+.DS_Store
+
+# MacOS and Windows specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files and directories
+tmp
+temp
+*.tmp
+*.log
+*.lock
+*.swp
+*.bak
+*.pid
+*.seed
+*.pid.lock
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Docker files
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# CI/CD configuration files
+.circleci
+.github
+.gitlab-ci.yml
+
+# Miscellaneous
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.user

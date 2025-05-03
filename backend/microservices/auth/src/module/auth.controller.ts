@@ -14,9 +14,12 @@ export class AuthController {
   constructor(channel: Channel) {
     this.channel = channel;
     this.authService = new AuthService();
+    this.handlers = this.initializeHandlers();
+  }
 
-    // Inicializamos los handlers de cada tópico
-    this.handlers = {
+  // Método para inicializar los handlers
+  private initializeHandlers() {
+    return {
       "auth.login": this.handleLogin.bind(this),
       "auth.verifyToken": this.handleVerifyToken.bind(this),
     };
@@ -24,16 +27,33 @@ export class AuthController {
 
   // Método para iniciar la escucha de los tópicos
   async startListening() {
+    await this.setupQueuesAndBindings();
+    this.consumeMessages("auth_queue");
+  }
+
+  // Configuración de colas y enlaces
+  private async setupQueuesAndBindings() {
     await this.channel.assertQueue("auth_queue", { durable: true });
+    await this.bindQueueToExchange("auth_queue", "auth_exchange", [
+      "auth.login",
+      "auth.verifyToken",
+    ]);
+  }
 
-    await this.channel.bindQueue("auth_queue", "auth_exchange", "auth.login");
-    await this.channel.bindQueue(
-      "auth_queue",
-      "auth_exchange",
-      "auth.verifyToken"
-    );
+  // Método para enlazar una cola a un exchange con múltiples routing keys
+  private async bindQueueToExchange(
+    queue: string,
+    exchange: string,
+    routingKeys: string[]
+  ) {
+    for (const routingKey of routingKeys) {
+      await this.channel.bindQueue(queue, exchange, routingKey);
+    }
+  }
 
-    this.channel.consume("auth_queue", async (msg) => {
+  // Método para consumir los mensajes de una cola
+  private async consumeMessages(queue: string) {
+    this.channel.consume(queue, async (msg) => {
       if (!msg) return;
 
       const routingKey = msg.fields.routingKey;
@@ -42,7 +62,6 @@ export class AuthController {
       console.log(`📩 Received message with routingKey: ${routingKey}`);
 
       const handler = this.handlers[routingKey];
-
       if (handler) {
         await handler(msg, payload);
       } else {

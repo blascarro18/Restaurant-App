@@ -58,6 +58,7 @@ export class OrdersController {
         return res.end(
           JSON.stringify({
             data: response.data,
+            meta: response.meta,
             message: response.message || "Orders retrieved successfully",
           })
         );

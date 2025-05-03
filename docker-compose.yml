@@ -70,11 +70,14 @@ services:
   orders-ms:
     build: ./backend/microservices/orders
     image: orders-ms
+    ports:
+      - ${SOCKET_PORT}:${SOCKET_PORT}
     volumes:
       - ./backend/microservices/orders:/usr/src/app
     command: /bin/sh -c "sleep 15 && npm run start:dev"
     environment:
       - PORT=${NODE_PORT_DEFAULT}
+      - SOCKET_PORT=${SOCKET_PORT}
       - RABBITMQ_URL=${RABBITMQ_URL}
       - DATABASE_URL=${ORDERS_DATABASE_URL}
     depends_on:
@@ -84,6 +87,60 @@ services:
     networks:
       - backend
     restart: always
+
+  # Warehouse Microservice
+  warehouse-ms:
+    build: ./backend/microservices/warehouse
+    image: warehouse-ms
+    volumes:
+      - ./backend/microservices/warehouse:/usr/src/app
+    command: /bin/sh -c "sleep 15 && npm run start:dev"
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${WAREHOUSE_DATABASE_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+    networks:
+      - backend
+    restart: always
+
+  # Kitchen Microservice
+  kitchen-ms:
+    build: ./backend/microservices/kitchen
+    image: kitchen-ms
+    volumes:
+      - ./backend/microservices/kitchen:/usr/src/app
+    command: /bin/sh -c "sleep 30 && npm run start:dev"
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${KITCHEN_DATABASE_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+      - warehouse-ms 
+    networks:
+      - backend
+    restart: always
+
+  # Restaurant App Frontend
+  restaurant-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: restaurant-app
+    volumes:
+      - ./frontend:/usr/src/app
+      - /app/node_modules
+    ports:
+      - ${DEFAULT_APP_PORT}:${DEFAULT_APP_PORT}
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    restart: unless-stopped
 
 networks:
   backend:
