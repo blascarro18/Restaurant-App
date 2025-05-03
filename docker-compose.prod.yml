@@ -1,0 +1,134 @@
+version: "3.8"
+
+services:
+  # Postgres Database
+  postgres-db:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - ${RABBITMQ_HTTP_PORT}:${RABBITMQ_HTTP_PORT}
+      - ${RABBITMQ_PORT}:${RABBITMQ_PORT}
+    networks:
+      - backend
+
+  # API Gateway
+  api-gateway:
+    build: ./backend/api-gateway
+    image: api-gateway
+    ports:
+      - ${API_GATEWAY_PORT}:${API_GATEWAY_PORT}
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+    networks:
+      - backend
+    restart: always
+
+  # Auth Microservice
+  auth-ms:
+    build: ./backend/microservices/auth
+    image: auth-ms
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${AUTH_DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+    networks:
+      - backend
+    restart: always
+
+  # Orders Microservice
+  orders-ms:
+    build: ./backend/microservices/orders
+    image: orders-ms
+    ports:
+      - ${SOCKET_PORT}:${SOCKET_PORT}
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - SOCKET_PORT=${SOCKET_PORT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${ORDERS_DATABASE_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+    networks:
+      - backend
+    restart: always
+
+  # Warehouse Microservice
+  warehouse-ms:
+    build: ./backend/microservices/warehouse
+    image: warehouse-ms
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${WAREHOUSE_DATABASE_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+    networks:
+      - backend
+    restart: always
+
+  # Kitchen Microservice
+  kitchen-ms:
+    build: ./backend/microservices/kitchen
+    image: kitchen-ms
+    environment:
+      - PORT=${NODE_PORT_DEFAULT}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - DATABASE_URL=${KITCHEN_DATABASE_URL}
+    depends_on:
+      - postgres-db
+      - rabbitmq
+      - api-gateway
+      - warehouse-ms
+    networks:
+      - backend
+    restart: always
+
+  # Restaurant App Frontend (Angular)
+  restaurant-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: restaurant-app
+    container_name: restaurant-app
+    ports:
+      - ${DEFAULT_APP_PORT}:80
+    restart: unless-stopped
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
