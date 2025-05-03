@@ -27,7 +27,7 @@ jobs:
           docker build -t api-gateway \
             --build-arg PORT=${{ secrets.PORT }} \
             --build-arg RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
-            -f ./dockerfile.prod ./
+            -f backend/api-gateway/dockerfile.prod backend/api-gateway
 
       - name: Save Docker image to tar
         run: |
