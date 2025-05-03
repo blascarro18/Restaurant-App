@@ -46,6 +46,9 @@ COPY --from=build /usr/src/app/dist ./dist
 COPY --from=build /usr/src/app/prisma ./prisma
 COPY --from=build /usr/src/app/package.json ./package.json
 
+# Copiar el archivo .env
+COPY .env .env
+
 ARG PORT  
 ARG DATABASE_URL  
 ARG RABBITMQ_URL  
