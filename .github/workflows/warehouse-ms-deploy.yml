@@ -1,11 +1,11 @@
-name: Deploy Backend to AWS Lightsail (api-gateway)
+name: Deploy Backend to AWS Lightsail (warehouse-ms)
 
 on:
   push:
     branches: ["main"]
     paths:
-      - "backend/api-gateway/**"
-      - ".github/workflows/api-gateway-deploy.yml"
+      - "backend/microservices/warehouse/**"
+      - ".github/workflows/warehouse-ms-deploy.yml"
   merge_group:
     branches: ["main"]
 
@@ -24,30 +24,31 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t api-gateway \
+          docker build -t warehouse-ms \
             --build-arg PORT=${{ secrets.PORT }} \
             --build-arg RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
-            -f backend/api-gateway/dockerfile.prod backend/api-gateway
+            --build-arg DATABASE_URL=${{ secrets.WAREHOUSE_DATABASE_URL }} \
+            -f backend/microservices/warehouse/dockerfile.prod backend/microservices/warehouse
 
       - name: Save Docker image to tar
         run: |
-          docker save api-gateway -o api-gateway.tar
+          docker save warehouse-ms -o warehouse-ms.tar
 
       - name: Copy Docker image to Lightsail
         run: |
-          scp -o StrictHostKeyChecking=no api-gateway.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+          scp -o StrictHostKeyChecking=no warehouse-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
 
       - name: Load Docker image on Lightsail
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
             cd /home/ec2-user/backend-images &&
-            sudo docker load -i api-gateway.tar
+            sudo docker load -i warehouse-ms.tar
           '
 
       - name: Deploy container on Lightsail
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
-            docker stop api-gateway 2>/dev/null || true &&
-            docker rm api-gateway 2>/dev/null || true &&
-            docker run -d --name api-gateway --network backend-network --network-alias api-gateway -p 5000:5000 api-gateway
+            docker stop warehouse-ms 2>/dev/null || true &&
+            docker rm warehouse-ms 2>/dev/null || true &&
+            docker run -d --name warehouse-ms --network backend-network --network-alias warehouse-ms warehouse-ms
           '
