@@ -1,0 +1,65 @@
+# Dependencias
+FROM node:20-alpine as deps
+
+WORKDIR /usr/src/app
+
+RUN apk add --no-cache openssl libssl3
+
+COPY package.json package-lock.json ./
+
+RUN npm install --legacy-peer-deps
+
+# Builder
+FROM node:20-alpine as build
+
+WORKDIR /usr/src/app
+
+RUN apk add --no-cache openssl libssl3
+
+ARG PORT  
+ARG DATABASE_URL  
+ARG RABBITMQ_URL  
+ARG JWT_SECRET  
+ARG JWT_EXPIRATION
+
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY . .
+
+# Transpila TypeScript
+RUN npm run build
+
+# Instala dependencias de producción
+RUN npm ci --only=production && npm cache clean --force
+
+# Generar Prisma Client
+RUN npx prisma generate
+
+# Imagen final
+FROM node:20-alpine as prod
+
+WORKDIR /usr/src/app
+
+RUN apk add --no-cache openssl libssl3
+
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/prisma ./prisma
+COPY --from=build /usr/src/app/package.json ./package.json
+
+ARG PORT  
+ARG DATABASE_URL  
+ARG RABBITMQ_URL  
+ARG JWT_SECRET  
+ARG JWT_EXPIRATION
+
+ENV NODE_ENV=production  
+ENV PORT=${PORT}  
+ENV DATABASE_URL=${DATABASE_URL}  
+ENV RABBITMQ_URL=${RABBITMQ_URL}  
+ENV JWT_SECRET=${JWT_SECRET}  
+ENV JWT_EXPIRATION=${JWT_EXPIRATION}
+
+USER node
+
+# Ejecuta migraciones y la app
+CMD [ "sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm start" ]
