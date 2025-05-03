@@ -1,0 +1,57 @@
+name: Deploy Backend to AWS Lightsail (auth-ms)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "backend/microservices/auth/**"
+      - ".github/workflows/auth-ms-deploy.yml"
+  merge_group:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SERVER_SSH_KEY  }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t auth-ms \
+            --build-arg PORT=${{ secrets.PORT }} \
+            --build-arg RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
+            --build-arg DATABASE_URL=${{ secrets.AUTH_DATABASE_URL }} \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            --build-arg JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }} \
+            -f backend/api-gateway/dockerfile.prod backend/api-gateway
+
+      - name: Save Docker image to tar
+        run: |
+          docker save auth-ms -o auth-ms.tar
+
+      - name: Copy Docker image to Lightsail
+        run: |
+          scp -o StrictHostKeyChecking=no auth-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+
+      - name: Load Docker image on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+            cd /home/ec2-user/backend-images &&
+            sudo docker load -i auth-ms.tar
+          '
+
+      - name: Deploy container on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+            docker stop auth-ms 2>/dev/null || true &&
+            docker rm auth-ms 2>/dev/null || true &&
+            docker run -d --name auth-ms --network backend-network --network-alias auth-ms auth-ms
+          '
+
