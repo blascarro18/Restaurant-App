@@ -1,0 +1,55 @@
+name: Deploy Backend to AWS Lightsail (orders-ms)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "backend/microservices/orders/**"
+      - ".github/workflows/orders-ms-deploy.yml"
+  merge_group:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SERVER_SSH_KEY  }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t orders-ms \
+            --build-arg PORT=${{ secrets.PORT }} \
+            --build-arg SOCKET_PORT=${{ secrets.SOCKET_PORT }} \
+            --build-arg RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
+            --build-arg DATABASE_URL=${{ secrets.ORDERS_DATABASE_URL }} \
+            -f backend/microservices/orders/dockerfile.prod backend/microservices/orders
+
+      - name: Save Docker image to tar
+        run: |
+          docker save orders-ms -o orders-ms.tar
+
+      - name: Copy Docker image to Lightsail
+        run: |
+          scp -o StrictHostKeyChecking=no orders-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+
+      - name: Load Docker image on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+            cd /home/ec2-user/backend-images &&
+            sudo docker load -i orders-ms.tar
+          '
+
+      - name: Deploy container on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+            docker stop orders-ms 2>/dev/null || true &&
+            docker rm orders-ms 2>/dev/null || true &&
+            docker run -d --name orders-ms --network backend-network --network-alias orders-ms orders-ms
+          '
