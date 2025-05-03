@@ -1,0 +1,54 @@
+name: Deploy Backend to AWS Lightsail (warehouse-ms)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "backend/microservices/warehouse/**"
+      - ".github/workflows/warehouse-ms-deploy.yml"
+  merge_group:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SERVER_SSH_KEY  }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t warehouse-ms \
+            --build-arg PORT=${{ secrets.PORT }} \
+            --build-arg RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
+            --build-arg DATABASE_URL=${{ secrets.WAREHOUSE_DATABASE_URL }} \
+            -f backend/microservices/warehouse/dockerfile.prod backend/microservices/warehouse
+
+      - name: Save Docker image to tar
+        run: |
+          docker save warehouse-ms -o warehouse-ms.tar
+
+      - name: Copy Docker image to Lightsail
+        run: |
+          scp -o StrictHostKeyChecking=no kitchen-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+
+      - name: Load Docker image on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+            cd /home/ec2-user/backend-images &&
+            sudo docker load -i warehouse-ms.tar
+          '
+
+      - name: Deploy container on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+            docker stop warehouse-ms 2>/dev/null || true &&
+            docker rm warehouse-ms 2>/dev/null || true &&
+            docker run -d --name warehouse-ms --network backend-network --network-alias warehouse-ms warehouse-ms
+          '
