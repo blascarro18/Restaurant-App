@@ -1,0 +1,60 @@
+# Dependencias
+FROM node:20-alpine as deps
+
+WORKDIR /usr/src/app
+
+# Instalar OpenSSL 1.1 para Prisma
+RUN apk add --no-cache openssl libssl3
+
+COPY package.json ./  
+COPY package-lock.json ./  
+
+RUN npm install --legacy-peer-deps  
+
+# Builder - Construye la aplicación
+FROM node:20-alpine as build
+
+WORKDIR /usr/src/app
+
+# Instalar OpenSSL 1.1 para Prisma
+RUN apk add --no-cache openssl libssl3
+
+# Define las variables de entorno para recibir un valor en build-time
+ARG PORT  
+ARG RABBITMQ_URL
+
+# Copiar de deps los módulos de Node  
+COPY --from=deps /usr/src/app/node_modules ./node_modules  
+
+# Copiar todo el código fuente de la aplicación  
+COPY . .  
+
+RUN npm run build  
+
+RUN npm ci -f --only=production --legacy-peer-deps && npm cache clean --force
+
+# Crear la imagen final de Docker
+FROM node:20-alpine as prod
+
+WORKDIR /usr/src/app
+
+# Instalar OpenSSL 1.1 para Prisma
+RUN apk add --no-cache openssl libssl3
+
+# Copiar los módulos de node y la carpeta dist desde la etapa anterior
+COPY --from=build /usr/src/app/node_modules ./node_modules  
+COPY --from=build /usr/src/app/dist ./dist  
+
+# Establece las variables de entorno en la imagen final
+ARG PORT  
+ARG RABBITMQ_URL
+
+ENV NODE_ENV=production  
+ENV PORT=${PORT}  
+ENV RABBITMQ_URL=${RABBITMQ_URL}
+
+USER node  
+
+EXPOSE 3000  
+
+CMD [ "node", "dist/main.js" ]  
