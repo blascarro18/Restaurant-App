@@ -67,10 +67,12 @@ export class KitchenService {
         {
           orderId,
           recipeId: recipe.id,
-          ingredients: recipe.recipeIngredient.map((ingredient) => ({
-            ingredientId: ingredient.ingredientId,
-            quantity: ingredient.quantity,
-          })),
+          ingredients: recipe.recipeIngredient.map(
+            (ingredient: { ingredientId: number; quantity: number }) => ({
+              ingredientId: ingredient.ingredientId,
+              quantity: ingredient.quantity,
+            })
+          ),
         }
       );
 
