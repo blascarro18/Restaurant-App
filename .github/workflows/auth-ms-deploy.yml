@@ -49,7 +49,7 @@ jobs:
 
       - name: Deploy container on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_SERVER_IP}} '
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
             docker stop auth-ms 2>/dev/null || true &&
             docker rm auth-ms 2>/dev/null || true &&
             docker run -d --name auth-ms --network backend-network --network-alias auth-ms auth-ms
