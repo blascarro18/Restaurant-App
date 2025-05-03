@@ -1,0 +1,50 @@
+name: Deploy Frontend to AWS Lightsail
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-deploy.yml"
+  merge_group:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.AWS_SERVER_SSH_KEY }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t restaurant-app -f ./frontend/Dockerfile.prod ./frontend
+
+      - name: Save Docker image to tar
+        run: |
+          docker save restaurant-app -o restaurant-app.tar
+
+      - name: Copy Docker image to Lightsail
+        run: |
+          scp -o StrictHostKeyChecking=no restaurant-app.tar ec2-user@${{ secrets.AWS_SERVER_IP }}:/home/ec2-user/frontend-images
+
+      - name: Load Docker image on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP }} '
+            cd /home/ec2-user/frontend-images &&
+            sudo docker load -i restaurant-app.tar
+          '
+
+      - name: Deploy container on Lightsail
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP }} '
+            docker stop restaurant-app 2>/dev/null || true &&
+            docker rm restaurant-app 2>/dev/null || true &&
+            docker run -d --name restaurant-app --network frontend-network --network-alias restaurant-app -p 8080:80 restaurant-app
+          '
