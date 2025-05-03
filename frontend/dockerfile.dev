@@ -1,0 +1,22 @@
+# Etapa 1: Construcción de la aplicación Angular
+FROM node:18 AS build
+
+# Establece el directorio de trabajo en el contenedor
+WORKDIR /usr/src/app
+
+# Copia el package.json y package-lock.json
+COPY package.json ./
+COPY package-lock.json ./
+
+# Instala las dependencias de Angular
+RUN npm install --legacy-peer-deps --force
+RUN npm install -g @angular/cli@latest --legacy-peer-deps --force
+
+# Copia el resto de la aplicación Angular al contenedor
+COPY . .
+
+VOLUME /usr/src/app
+
+EXPOSE 4200
+
+CMD ["ng", "serve", "--host", "0.0.0.0", "--poll=2000"]
