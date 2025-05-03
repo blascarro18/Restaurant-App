@@ -30,7 +30,7 @@ jobs:
             --build-arg DATABASE_URL=${{ secrets.AUTH_DATABASE_URL }} \
             --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
             --build-arg JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }} \
-            -f backend/api-gateway/dockerfile.prod backend/api-gateway
+            -f backend/microservices/auth/dockerfile.prod backend/microservices/auth
 
       - name: Save Docker image to tar
         run: |
