@@ -47,7 +47,7 @@ jobs:
       - name: Deploy container on Lightsail
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
-            docker stop client-gateway 2>/dev/null || true &&
-            docker rm client-gateway 2>/dev/null || true &&
+            docker stop api-gateway 2>/dev/null || true &&
+            docker rm api-gateway 2>/dev/null || true &&
             docker run -d --name api-gateway --network backend-network --network-alias api-gateway -p 5000:5000 api-gateway
           '
