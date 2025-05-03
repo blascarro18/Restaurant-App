@@ -50,12 +50,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
             docker stop kitchen-ms 2>/dev/null || true &&
             docker rm kitchen-ms 2>/dev/null || true &&
-            docker run -d --name kitchen-ms \
-            --env PORT=${{ secrets.PORT }} \
-            --env DATABASE_URL=${{ secrets.KITCHEN_DATABASE_URL }} \
-            --env RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
-            --network backend-network \
-            --network-alias kitchen-ms \
-            kitchen-ms && \
-            docker exec kitchen-ms /bin/sh -c "echo PORT=\$PORT && echo DATABASE_URL=\$DATABASE_URL && echo RABBITMQ_URL=\$RABBITMQ_URL"
+            docker run -d --name kitchen-ms --network backend-network --network-alias kitchen-ms kitchen-ms
           '
