@@ -56,5 +56,6 @@ jobs:
             --env RABBITMQ_URL=${{ secrets.RABBITMQ_URL }} \
             --network backend-network \
             --network-alias kitchen-ms \
-            kitchen-ms
+            kitchen-ms && \
+            docker exec kitchen-ms /bin/sh -c "echo PORT=\$PORT && echo DATABASE_URL=\$DATABASE_URL && echo RABBITMQ_URL=\$RABBITMQ_URL"
           '
