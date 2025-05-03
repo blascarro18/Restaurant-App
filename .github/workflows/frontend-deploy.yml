@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t restaurant-app -f ./frontend/Dockerfile.prod ./frontend
+          docker build -t restaurant-app -f ./frontend/dockerfile.prod ./frontend
 
       - name: Save Docker image to tar
         run: |
