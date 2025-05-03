@@ -36,7 +36,7 @@ jobs:
 
       - name: Copy Docker image to Lightsail
         run: |
-          scp -o StrictHostKeyChecking=no kitchen-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+          scp -o StrictHostKeyChecking=no warehouse-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
 
       - name: Load Docker image on Lightsail
         run: |
