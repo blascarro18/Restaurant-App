@@ -103,16 +103,17 @@ async function main() {
           },
         });
 
-        console.log(
-          `Verificando relación entre receta ${recipe.name} e ingrediente ${ingredient.name}`
-        );
-
         if (!existingRelation) {
+          const quantity = Math.floor(Math.random() * 3) + 1;
+          console.log(
+            `➡️ Agregando ${ingredient.name} con cantidad ${quantity} a ${recipe.name}`
+          );
+
           const recipeIngredientCreated = await prisma.recipeIngredient.create({
             data: {
               recipeId: recipe.id,
               ingredientId: ingredient.id,
-              quantity: Math.floor(Math.random() * 3) + 1,
+              quantity,
             },
           });
 
