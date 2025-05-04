@@ -103,6 +103,10 @@ async function main() {
           },
         });
 
+        console.log(
+          `Verificando relación entre receta ${recipe.name} e ingrediente ${ingredient.name}`
+        );
+
         if (!existingRelation) {
           await prisma.recipeIngredient.create({
             data: {
@@ -111,10 +115,14 @@ async function main() {
               quantity: Math.floor(Math.random() * 3) + 1,
             },
           });
+        } else {
+          continue;
         }
       }
     }
   }
+
+  return;
 }
 
 main()
