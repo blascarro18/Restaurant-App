@@ -62,6 +62,8 @@ ENV RABBITMQ_URL=${RABBITMQ_URL}
 ENV JWT_SECRET=${JWT_SECRET}  
 ENV JWT_EXPIRATION=${JWT_EXPIRATION}
 
+RUN chown -R node:node /usr/src/app
+
 USER node
 
 # Ejecuta migraciones y la app
