@@ -7,7 +7,7 @@
     "start:dev": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed && ts-node-dev --respawn --transpile-only --poll src/main.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate deploy",
-    "prisma:seed": "npx ts-node prisma/seed.ts",
+    "prisma:seed": "node dist/prisma/seed.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
