@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://localhost:5000/api',
-    socketUrl: 'http://localhost:8080',
+    apiUrl: 'https://dk6cf4juaq2rh.cloudfront.net/api',
+    socketUrl: 'https://dk6cf4juaq2rh.cloudfront.net',
 };
