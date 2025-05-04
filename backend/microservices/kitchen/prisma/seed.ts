@@ -96,12 +96,19 @@ async function main() {
       }
 
       if (ingredient) {
-        const existingRelation = await prisma.recipeIngredient.findFirst({
-          where: {
-            recipeId: recipe.id,
-            ingredientId: ingredient.id,
-          },
-        });
+        const existingRelation = await prisma.recipeIngredient
+          .findFirst({
+            where: {
+              recipeId: recipe.id,
+              ingredientId: ingredient.id,
+            },
+          })
+          .catch((e) => {
+            console.error("Error al buscar la relación:", e);
+            return null;
+          });
+
+        console.log("existingRelation", existingRelation);
 
         if (!existingRelation) {
           const quantity = Math.floor(Math.random() * 3) + 1;
