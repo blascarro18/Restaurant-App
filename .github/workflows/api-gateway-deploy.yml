@@ -35,18 +35,18 @@ jobs:
 
       - name: Copy Docker image to Lightsail
         run: |
-          scp -o StrictHostKeyChecking=no api-gateway.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+          scp -o StrictHostKeyChecking=no api-gateway.tar ubuntu@${{ secrets.AWS_SERVER_IP}}:/home/ubuntu/backend-images
 
       - name: Load Docker image on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
-            cd /home/ec2-user/backend-images &&
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_SERVER_IP}} '
+            cd /home/ubuntu/backend-images &&
             sudo docker load -i api-gateway.tar
           '
 
       - name: Deploy container on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_SERVER_IP}} '
             docker stop api-gateway 2>/dev/null || true &&
             docker rm api-gateway 2>/dev/null || true &&
             docker run -d --name api-gateway --network backend-network --network-alias api-gateway -p 5000:5000 api-gateway
