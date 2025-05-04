@@ -15,10 +15,6 @@ async function main() {
     correlationId
   );
 
-  console.log("🔄 Esperando respuesta de la cola...");
-
-  console.log("🔄 Respuesta de la cola:", response);
-
   if (!response.success) {
     console.error("❌ Error al obtener los ingredientes:", response.message);
     return;
@@ -87,6 +83,8 @@ async function main() {
       });
     }
 
+    console.log(`Receta ${recipe.name} creada o ya existe.`);
+
     for (const ingredientName of recipeData.ingredients) {
       const ingredient = ingredients.find(
         (i: any) => i.name === ingredientName
@@ -98,6 +96,8 @@ async function main() {
         );
         continue;
       }
+
+      console.log(`Ingrediente ${ingredient.name} encontrado.`);
 
       if (ingredient) {
         const existingRelation = await prisma.recipeIngredient.findFirst({
