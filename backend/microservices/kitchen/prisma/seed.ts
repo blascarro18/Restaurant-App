@@ -108,13 +108,15 @@ async function main() {
         );
 
         if (!existingRelation) {
-          await prisma.recipeIngredient.create({
+          const recipeIngredientCreated = await prisma.recipeIngredient.create({
             data: {
               recipeId: recipe.id,
               ingredientId: ingredient.id,
               quantity: Math.floor(Math.random() * 3) + 1,
             },
           });
+
+          console.log(" relacion creada ", recipeIngredientCreated);
         } else {
           continue;
         }
