@@ -83,8 +83,6 @@ async function main() {
       });
     }
 
-    console.log(`Receta ${recipe.name} creada o ya existe.`);
-
     for (const ingredientName of recipeData.ingredients) {
       const ingredient = ingredients.find(
         (i: any) => i.name === ingredientName
@@ -96,8 +94,6 @@ async function main() {
         );
         continue;
       }
-
-      console.log(`Ingrediente ${ingredient.name} encontrado.`);
 
       if (ingredient) {
         const existingRelation = await prisma.recipeIngredient.findFirst({
@@ -122,10 +118,11 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error("❌ Error en el seed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
   });
