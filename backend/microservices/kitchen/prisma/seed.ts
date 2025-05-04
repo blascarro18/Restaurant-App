@@ -15,6 +15,10 @@ async function main() {
     correlationId
   );
 
+  console.log("🔄 Esperando respuesta de la cola...");
+
+  console.log("🔄 Respuesta de la cola:", response);
+
   if (!response.success) {
     console.error("❌ Error al obtener los ingredientes:", response.message);
     return;
