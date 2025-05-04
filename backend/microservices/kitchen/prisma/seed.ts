@@ -108,13 +108,8 @@ async function main() {
             return null;
           });
 
-        console.log("existingRelation", existingRelation);
-
         if (!existingRelation) {
           const quantity = Math.floor(Math.random() * 3) + 1;
-          console.log(
-            `➡️ Agregando ${ingredient.name} con cantidad ${quantity} a ${recipe.name}`
-          );
 
           const recipeIngredientCreated = await prisma.recipeIngredient.create({
             data: {
@@ -123,8 +118,6 @@ async function main() {
               quantity,
             },
           });
-
-          console.log(" relacion creada ", recipeIngredientCreated);
         } else {
           continue;
         }
