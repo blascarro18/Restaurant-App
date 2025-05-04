@@ -1,9 +1,9 @@
 {
   "name": "orders",
   "version": "1.0.0",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "scripts": {
-    "start": "npm run prisma:generate && node dist/main.js",
+    "start": "npm run prisma:generate && node dist/src/main.js",
     "start:dev": "npm run prisma:generate && npm run prisma:migrate && ts-node-dev --respawn --transpile-only --poll src/main.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate deploy",
