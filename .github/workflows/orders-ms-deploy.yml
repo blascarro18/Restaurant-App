@@ -37,18 +37,18 @@ jobs:
 
       - name: Copy Docker image to Lightsail
         run: |
-          scp -o StrictHostKeyChecking=no orders-ms.tar ec2-user@${{ secrets.AWS_SERVER_IP}}:/home/ec2-user/backend-images
+          scp -o StrictHostKeyChecking=no orders-ms.tar ubuntu@${{ secrets.AWS_SERVER_IP}}:/home/ubuntu/backend-images
 
       - name: Load Docker image on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
-            cd /home/ec2-user/backend-images &&
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_SERVER_IP}} '
+            cd /home/ubuntu/backend-images &&
             sudo docker load -i orders-ms.tar
           '
 
       - name: Deploy container on Lightsail
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.AWS_SERVER_IP}} '
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.AWS_SERVER_IP}} '
             docker stop orders-ms 2>/dev/null || true &&
             docker rm orders-ms 2>/dev/null || true &&
             docker run -d --name orders-ms --network backend-network --network-alias orders-ms orders-ms
