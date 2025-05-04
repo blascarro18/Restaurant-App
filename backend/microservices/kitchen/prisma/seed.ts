@@ -103,7 +103,7 @@ async function main() {
               ingredientId: ingredient.id,
             },
           })
-          .catch((e) => {
+          .catch((e: any) => {
             console.error("Error al buscar la relación:", e);
             return null;
           });
