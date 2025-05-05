@@ -59,6 +59,6 @@ export async function publishAndWaitForResponse(
 
     setTimeout(() => {
       reject(new Error("RPC timeout"));
-    }, 10000); // Timeout para esperar la respuesta
+    }, 50000); // Timeout para esperar la respuesta
   });
 }
