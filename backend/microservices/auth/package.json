@@ -4,9 +4,10 @@
   "main": "dist/main.js",
   "scripts": {
     "start": "npm run prisma:generate && node dist/src/main.js",
-    "start:dev": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed && ts-node-dev --respawn --transpile-only --poll src/main.ts",
+    "start:dev": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed:dev && ts-node-dev --respawn --transpile-only --poll src/main.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:seed:dev": "npx ts-node prisma/seed.ts",
     "prisma:seed": "node dist/prisma/seed.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
