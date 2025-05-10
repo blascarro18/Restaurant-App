@@ -6,15 +6,17 @@ import { publishToExchange } from "../common/message-broken/rabbitmq";
 import { MarketService } from "./market.service";
 dotenv.config();
 
-const prisma = new PrismaClient();
-const marketService = new MarketService();
-
 export class WarehouseService {
+  constructor(
+    private prisma = new PrismaClient(),
+    private marketService = new MarketService()
+  ) {}
+
   //Get Ingredients
   async getIngredients() {
     try {
       // Obtener todas los ingredientes de la base de datos
-      const ingredients = await prisma.ingredient.findMany({
+      const ingredients = await this.prisma.ingredient.findMany({
         include: {
           stock: true,
         },
@@ -40,7 +42,7 @@ export class WarehouseService {
   async getIngredientById(id: number) {
     try {
       // Obtener un ingrediente por ID de la base de datos
-      const ingredient = await prisma.ingredient.findUnique({
+      const ingredient = await this.prisma.ingredient.findUnique({
         where: { id },
       });
 
@@ -76,7 +78,7 @@ export class WarehouseService {
       const resultSummary = [];
 
       for (const ingredient of ingredients) {
-        const ingredientData = await prisma.ingredient.findUnique({
+        const ingredientData = await this.prisma.ingredient.findUnique({
           where: { id: ingredient.ingredientId },
           include: {
             stock: true,
@@ -108,14 +110,14 @@ export class WarehouseService {
           ingredientData.stock?.quantity !== undefined &&
           ingredientData.stock.quantity < ingredient.quantity
         ) {
-          const bought = await marketService.buyIngredientUntilAvailable(
+          const bought = await this.marketService.buyIngredientUntilAvailable(
             ingredientData.id,
             ingredientData.name
           );
 
           if (bought > 0) {
             // Actualizar la cantidad de ingredientes en stock
-            await prisma.stock.updateMany({
+            await this.prisma.stock.updateMany({
               where: {
                 ingredientId: ingredient.ingredientId,
               },
@@ -158,7 +160,7 @@ export class WarehouseService {
 
         // Descontar del stock de la bodega los ingredientes que fueron entregados a cocina
         for (const ingredient of ingredients) {
-          await prisma.stock.updateMany({
+          await this.prisma.stock.updateMany({
             where: {
               ingredientId: ingredient.ingredientId,
             },

@@ -8,39 +8,39 @@ import {
 } from "../common/message-broken/rabbitmq";
 dotenv.config();
 
-const prisma = new PrismaClient();
+export class KitchenService {
+  constructor(private prisma = new PrismaClient()) {}
 
-async function getRandomRecipe() {
-  const recipesCount = await prisma.recipe.count();
+  async getRandomRecipe() {
+    const recipesCount = await this.prisma.recipe.count();
 
-  if (recipesCount === 0) {
-    throw new Error("No hay recetas en la base de datos.");
-  }
+    if (recipesCount === 0) {
+      throw new Error("No hay recetas en la base de datos.");
+    }
 
-  const randomIndex = Math.floor(Math.random() * recipesCount);
+    const randomIndex = Math.floor(Math.random() * recipesCount);
 
-  const randomRecipe = await prisma.recipe.findFirst({
-    skip: randomIndex,
-    include: {
-      recipeIngredient: {
-        select: {
-          ingredientId: true,
-          quantity: true,
+    const randomRecipe = await this.prisma.recipe.findFirst({
+      skip: randomIndex,
+      include: {
+        recipeIngredient: {
+          select: {
+            ingredientId: true,
+            quantity: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  return randomRecipe;
-}
+    return randomRecipe;
+  }
 
-export class KitchenService {
   async newOrder(orderData: { orderId: number }) {
     try {
       const { orderId } = orderData;
 
       // Obtener una receta aleatoria de la base de datos
-      const recipe = await getRandomRecipe();
+      const recipe = await this.getRandomRecipe();
 
       if (!recipe) {
         return {
@@ -97,7 +97,7 @@ export class KitchenService {
         },
       };
     } catch (error) {
-      console.error("Error durante el login:", error);
+      console.error("Error durante el proceso de creación de una orden", error);
       return {
         success: false,
         status: 400,
@@ -110,14 +110,14 @@ export class KitchenService {
   async getRecipes() {
     try {
       // Obtener todas las recetas de la base de datos
-      const recipes = await prisma.recipe.findMany();
+      const recipes = await this.prisma.recipe.findMany();
 
       const recipesData = [];
       for (const recipe of recipes) {
         const ingredientsData = [];
 
         // Obtener los ingredientes de cada receta
-        const ingredients = await prisma.recipeIngredient.findMany({
+        const ingredients = await this.prisma.recipeIngredient.findMany({
           where: { recipeId: recipe.id },
           select: {
             ingredientId: true,
@@ -181,7 +181,7 @@ export class KitchenService {
   async getRecipeById(id: number) {
     try {
       // Obtener una receta por ID de la base de datos
-      const recipe = await prisma.recipe.findUnique({
+      const recipe = await this.prisma.recipe.findUnique({
         where: { id },
       });
 
@@ -195,7 +195,7 @@ export class KitchenService {
 
       const ingredientsData = [];
       // Obtener los ingredientes de la receta
-      const ingredients = await prisma.recipeIngredient.findMany({
+      const ingredients = await this.prisma.recipeIngredient.findMany({
         where: { recipeId: recipe.id },
         select: {
           ingredientId: true,

@@ -8,7 +8,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate deploy",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "orders",
@@ -20,9 +20,12 @@
   "description": "Microservicio de gestión de órdenes para el ecosistema de microservicios.",
   "devDependencies": {
     "@types/amqplib": "^0.10.7",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.15.2",
     "@types/socket.io": "^3.0.1",
+    "jest": "^29.7.0",
     "prisma": "^6.6.0",
+    "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
